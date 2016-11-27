@@ -39,9 +39,9 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
                 print os.path.join(dirpath,newfile) + " exists"
             else:
                 print os.path.join(dirpath,newfile) + " does not exist"
-                cmd = cnv_script + " --infile " + re.escape(os.path.join(dirpath, f)) + " -b320 --debug"
+                cmd = cnv_script + " --infile " + re.escape(os.path.join(dirpath, f)) + " -b320"
                 print "cmd: " + cmd
-                #rtn = subprocess.call(cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320 --debug", shell=True);
+                #rtn = subprocess.call(cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320", shell=True);
                 rtn = subprocess.call(cmd, shell=True);
                 cnt2 += 1
                 if (rtn):
