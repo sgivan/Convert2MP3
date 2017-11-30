@@ -61,6 +61,7 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
                 print os.path.join(dirpath,newfile) + " does not exist"
                 #cmd = cnv_script + " --infile " + re.escape(os.path.join(dirpath, f)) + " --b320"
                 cmd = cnv_script + " --lowerbitrate --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+                #cmd = cnv_script + " --infile " + os.path.join(dirpath, f) + " " + bitrateflag
                 print "cmd: " + cmd
                 #rtn = subprocess.call(cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320", shell=True);
                 rtn = subprocess.call(cmd, shell=True);
