@@ -16,11 +16,20 @@ allfilenames = []
 parser = argparse.ArgumentParser()
 parser.add_argument("--limit", help="limit number of files processed", default=30)
 parser.add_argument("--bitrate", help="bitrate of converted files; pick 128, 256 or 320", default=320)
+parser.add_argument("--debug", help="send debugging output to terminal", action='store_true')
+parser.add_argument("--verbose", help="send verbose output to terminal", action='store_true')
+parser.add_argument("--keeplower", help="if output file exists, keep it if it has a lower bit rate", action='store_true')
+parser.add_argument("--keephigher", help="if output file exists, keep it if it has a higher bit rate", action='store_true')
 args = parser.parse_args()
 
 looplimit = args.limit
+debug = args.debug
+verbose = args.verbose
+if (debug): verbose = True
 bitrate = 320
 bitrateflag = "--b320"
+keeplower = args.keeplower
+keephigher = args.keephigher
 if (args.bitrate):
         if (args.bitrate == '128'):
             bitrateflag = "--b128"
@@ -40,7 +49,7 @@ cnt2 = 0
 of = open("warnings.txt", "w")
 
 cnv_script = os.environ['HOME'] + "/projects/audprocess/bin/convert_m4a_to_hq-mp3.pl"
-print cnv_script
+if (debug): print cnv_script
 
 for (dirpath, dirnames, filenames) in os.walk("./"):
 
@@ -52,23 +61,32 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
         matchobj = re.match( r'(.+)m4a$', f, re.M|re.I)
 
         if (matchobj):
-            print "this matched: '" + f + "'"
+            if (debug): print "this matched: '" + f + "'"
             newfile = matchobj.group(1) + "mp3"
             cnt1 += 1
+            cmd = cnv_script
             if (os.path.exists(os.path.join(dirpath,newfile))):
-                print os.path.join(dirpath,newfile) + " exists"
+                if (verbose): print os.path.join(dirpath,newfile) + " exists"
+
+                if (keeplower):
+                    cmd = cmd + " --verbose --lowerbitrate --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+                elif (keephigher):
+                    cmd = cmd + " --verbose --higherbitrate --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+                else:
+                    cmd = cmd + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+
             else:
-                print os.path.join(dirpath,newfile) + " does not exist"
-                #cmd = cnv_script + " --infile " + re.escape(os.path.join(dirpath, f)) + " --b320"
-                cmd = cnv_script + " --lowerbitrate --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
-                #cmd = cnv_script + " --infile " + os.path.join(dirpath, f) + " " + bitrateflag
-                print "cmd: " + cmd
-                #rtn = subprocess.call(cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320", shell=True);
-                rtn = subprocess.call(cmd, shell=True);
-                cnt2 += 1
-                if (rtn):
-                    of.write(os.path.join(dirpath, f))
-                    sys.exit("abnormal return from conversion script: '" + str(rtn) +"'")
+                if (verbose): print os.path.join(dirpath,newfile) + " does not exist"
+                #cmd = cnv_script + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+                cmd = cmd + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+                
+            if (verbose): print "cmd: " + cmd
+            #rtn = subprocess.call(cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320", shell=True);
+            rtn = subprocess.call(cmd, shell=True);
+            cnt2 += 1
+            if (rtn):
+                of.write(os.path.join(dirpath, f))
+                sys.exit("abnormal return from conversion script: '" + str(rtn) +"'")
 
 
 
