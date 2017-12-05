@@ -61,7 +61,7 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
         matchobj = re.match( r'(.+)m4a$', f, re.M|re.I)
 
         if (matchobj):
-            if (debug): print "this matched: '" + f + "'"
+            if (verbose): print "\nfile: '" + f + "'"
             newfile = matchobj.group(1) + "mp3"
             cnt1 += 1
             cmd = cnv_script
@@ -80,7 +80,7 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
                 #cmd = cnv_script + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
                 cmd = cmd + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
                 
-            if (verbose): print "cmd: " + cmd
+            if (debug): print "cmd: " + cmd
             #rtn = subprocess.call(cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320", shell=True);
             rtn = subprocess.call(cmd, shell=True);
             cnt2 += 1
