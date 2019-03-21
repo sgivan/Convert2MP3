@@ -30,11 +30,7 @@ bitrate = 320
 bitrateflag = "--b320"
 keeplower = args.keeplower
 keephigher = args.keephigher
-if (args.bitrate):
-        if (args.bitrate == '128'):
-            bitrateflag = "--b128"
-        elif (args.bitrate == '256'):
-            bitrateflag = "--b256"
+
 '''
 if (1):
     print "args.bitrate " + args.bitrate
@@ -48,8 +44,9 @@ cnt1 = 0
 cnt2 = 0
 of = open("warnings.txt", "w")
 
-cnv_script = os.environ['HOME'] + "/projects/audprocess/bin/convert_m4a_to_hq-mp3.pl"
-if (debug): print cnv_script
+m4a_cnv_script = os.environ['HOME'] + "/projects/audprocess/bin/convert_m4a_to_hq-mp3.pl"
+flac_cnv_script = os.environ['HOME'] + "/projects/audprocess/bin/convert_flac_to_hq-mp3.pl"
+if (debug): print m4a_cnv_script
 
 for (dirpath, dirnames, filenames) in os.walk("./"):
 
@@ -58,30 +55,43 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
         if (cnt2 >= int(args.limit)):
             break
 
-        matchobj = re.match( r'(.+)m4a$', f, re.M|re.I)
+#        matchobj = re.match( r'(.+)m4a$', f, re.M|re.I)
+        matchobj = re.match( r'(.+)(m4a|flac|wav)$', f, re.M|re.I)
 
         if (matchobj):
             if (verbose): print "\nfile: '" + f + "'"
-            newfile = matchobj.group(1) + "mp3"
             cnt1 += 1
-            cmd = cnv_script
-            if (os.path.exists(os.path.join(dirpath,newfile))):
-                if (verbose): print os.path.join(dirpath,newfile) + " exists"
+            newfile = matchobj.group(1) + "mp3"
 
-                if (keeplower):
-                    cmd = cmd + " --verbose --lowerbitrate --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
-                elif (keephigher):
-                    cmd = cmd + " --verbose --higherbitrate --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+            cmd = ""
+            if matchobj.group(2) == "m4a":
+                cmd = m4a_cnv_script
+                if (args.bitrate):
+                        if (args.bitrate == '128'):
+                            bitrateflag = "--b128"
+                        elif (args.bitrate == '256'):
+                            bitrateflag = "--b256"
+
+                cmd = cmd + " --verbose " + bitrateflag + " --infile " + re.escape(os.path.join(dirpath, f))
+
+                if (os.path.exists(os.path.join(dirpath,newfile))):
+                    if (verbose): print os.path.join(dirpath,newfile) + " exists"
+
+                    if (keeplower):
+                        cmd = cmd + " --lowerbitrate "
+                    elif (keephigher):
+                        cmd = cmd + " --higherbitrate "
+                    else:
+                        cmd = cmd 
+
                 else:
-                    cmd = cmd + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
-
-            else:
-                if (verbose): print os.path.join(dirpath,newfile) + " does not exist"
-                #cmd = cnv_script + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
-                cmd = cmd + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+                    if (verbose): print os.path.join(dirpath,newfile) + " does not exist"
+                    #cmd = m4a_cnv_script + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+#                    cmd = cmd + " --verbose --infile " + re.escape(os.path.join(dirpath, f)) + " " + bitrateflag
+                    cmd = cmd 
                 
             if (debug): print "cmd: " + cmd
-            #rtn = subprocess.call(cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320", shell=True);
+            #rtn = subprocess.call(m4a_cnv_script + " --infile \"" + os.path.join(dirpath, f) + "\" -b320", shell=True);
             rtn = subprocess.call(cmd, shell=True);
             cnt2 += 1
             if (rtn):
