@@ -26,10 +26,12 @@ looplimit = args.limit
 debug = args.debug
 verbose = args.verbose
 if (debug): verbose = True
-bitrate = 320
+#bitrate = 320
+#bitrate = args.bitrate
 bitrateflag = "--b320"
 keeplower = args.keeplower
 keephigher = args.keephigher
+exiftool = '/usr/bin/exiftool'
 
 '''
 if (1):
@@ -77,10 +79,24 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
                 if (os.path.exists(os.path.join(dirpath,newfile))):
                     if (verbose): print os.path.join(dirpath,newfile) + " exists"
 
+                    rtn = subprocess.check_output(exiftool + " -T -AudioBitrate \"" + os.path.join(dirpath,newfile) + "\"", shell=True)
+                    rtnbitrate = int(str.split(rtn, " ")[0])
+
+                    if (verbose):
+                        print "bitrate of existing file: %(bitrate)s" % { 'bitrate': rtnbitrate }
+
                     if (keeplower):
-                        cmd = cmd + " --lowerbitrate "
+                        if (rtnbitrate <= int(args.bitrate)):
+                            if verbose: print("skipping because of keeplower [%(bitrate)s]" % { 'bitrate': args.bitrate } )
+                            continue
+#                            cmd = cmd + " --lowerbitrate "
+
                     elif (keephigher):
-                        cmd = cmd + " --higherbitrate "
+                        if (rtnbitrate >= int(args.bitrate)):
+                            if verbose: print("skipping because of keephigher [%(bitrate)s]" % { 'bitrate': args.bitrate } )
+                            continue
+#                            cmd = cmd + " --higherbitrate "
+
                     else:
                         cmd = cmd 
 
@@ -97,6 +113,8 @@ for (dirpath, dirnames, filenames) in os.walk("./"):
             if (rtn):
                 of.write(os.path.join(dirpath, f))
                 sys.exit("abnormal return from conversion script: '" + str(rtn) +"'")
+
+#            break
 
 
 
